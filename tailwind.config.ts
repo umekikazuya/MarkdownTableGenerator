@@ -2,9 +2,9 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/**/*.{js,ts,jsx,tsx}",  // srcディレクトリ内のすべてのファイルを対象
+    "./pages/**/*.{js,ts,jsx,tsx}",  // pagesディレクトリ内のすべてのファイルを対象
+    "./components/**/*.{js,ts,jsx,tsx}",  // componentsディレクトリ内のすべてのファイルを対象
   ],
   theme: {
     extend: {
