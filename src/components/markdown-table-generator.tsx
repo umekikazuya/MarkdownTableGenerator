@@ -1,81 +1,39 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
 import {
-  AlignLeft,
   AlignCenter,
+  AlignLeft,
   AlignRight,
-  Plus,
-  Minus,
   Copy,
+  Minus,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "./ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
+import { useMarkdownGenerator } from "@/hooks/useMarkDownGenerator";
+import { useClipboard } from "@/hooks/useClipboard";
+import { useState } from "react";
+import { useTableData } from "@/hooks/useTableData";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { showToast } from "@/components/ui/toast";
 
 const MarkdownTableGenerator: React.FC = () => {
-  const [data, setData] = useState<string[][]>([
-    ["", "", ""],
-    ["", "", ""],
-    ["", "", ""],
-  ]);
+  // テーブルデータ管理のフック
+  const { data, addRow, addColumn, removeRow, removeColumn, handleCellChange } =
+    useTableData();
+
+  // Markdown生成設定
   const [isCompact, setIsCompact] = useState(false);
   const [useHeader, setUseHeader] = useState(false);
-  const [markdown, setMarkdown] = useState("");
+  const markdown = useMarkdownGenerator({ data, isCompact, useHeader });
 
-  const generateMarkdown = () => {
-    if (!data.length) return "";
-
-    const separator = data[0]
-      .map(() => (isCompact ? "---" : "------"))
-      .join("|");
-    const rows = data.map((row) => row.map((cell) => cell.trim()).join(" | "));
-
-    if (useHeader) {
-      rows.splice(1, 0, separator);
-    }
-
-    return rows.map((row) => `| ${row} |`).join("\n");
-  };
-
-  useEffect(() => {
-    setMarkdown(generateMarkdown());
-  }, [data, isCompact, useHeader]);
-
-  const handleCellChange = (
-    rowIndex: number,
-    colIndex: number,
-    value: string
-  ) => {
-    const newData = data.map((row, i) =>
-      i === rowIndex
-        ? row.map((cell, j) => (j === colIndex ? value : cell))
-        : row
-    );
-    setData(newData);
-  };
-
-  const addRow = () => setData([...data, Array(data[0].length).fill("")]);
-  const addColumn = () => setData(data.map((row) => [...row, ""]));
-  const removeRow = () => data.length > 1 && setData(data.slice(0, -1));
-  const removeColumn = () =>
-    data[0].length > 1 && setData(data.map((row) => row.slice(0, -1)));
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(markdown).then(() => {
-      showToast({
-        title: "コピーしました",
-        description: "Markdownテーブルがクリップボードにコピーされました。",
-      });
-    });
-  };
+  const copyToClipboard = useClipboard();
 
   return (
     <TooltipProvider>
@@ -119,13 +77,13 @@ const MarkdownTableGenerator: React.FC = () => {
               <table className="w-full">
                 <thead>
                   <tr>
-                    <th className="w-10 bg-muted text-center text-sm p-2 border-r"></th>
+                    <th className="w-10 bg-muted text-center text-sm p-2"></th>
                     {data[0].map((_, index) => (
-                      <th key={index} className="border p-2 bg-muted">
+                      <th key={index} className="p-2 bg-muted">
                         {String.fromCharCode(65 + index)}
                       </th>
                     ))}
-                    <th className="w-20 bg-muted p-2 border-l">
+                    <th className="w-20 bg-muted p-2">
                       <div className="flex justify-center gap-1">
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -258,7 +216,7 @@ const MarkdownTableGenerator: React.FC = () => {
                 className="absolute top-2 right-2"
                 size="icon"
                 variant="ghost"
-                onClick={copyToClipboard}
+                onClick={() => copyToClipboard(markdown)}
               >
                 <Copy className="h-4 w-4" />
               </Button>
