@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { generateMarkdownTable } from "@/utils/markdownUtils";
+import { TableData } from "@/utils/tableUtils";
 
 interface UseMarkdownGeneratorProps {
-  data: string[][];
+  data: TableData;
   isCompact: boolean;
   useHeader: boolean;
 }

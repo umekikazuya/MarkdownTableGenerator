@@ -22,18 +22,35 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { parseTableString } from "@/utils/markdownUtils";
 
 const MarkdownTableGenerator: React.FC = () => {
-  // テーブルデータ管理のフック
-  const { data, addRow, addColumn, removeRow, removeColumn, handleCellChange } =
-    useTableData();
+  const {
+    tableData,
+    setData,
+    addRow,
+    addColumn,
+    removeRow,
+    removeColumn,
+    handleCellChange,
+    setColumnAlignment,
+  } = useTableData();
 
-  // Markdown生成設定
   const [isCompact, setIsCompact] = useState(false);
   const [useHeader, setUseHeader] = useState(false);
-  const markdown = useMarkdownGenerator({ data, isCompact, useHeader });
+  const [rawText, setRawText] = useState("");
+  const markdown = useMarkdownGenerator({
+    data: tableData,
+    isCompact,
+    useHeader,
+  });
 
   const copyToClipboard = useClipboard();
+
+  const handleRawTextParse = () => {
+    const parsedData = parseTableString(rawText);
+    setData(parsedData);
+  };
 
   return (
     <TooltipProvider>
@@ -41,49 +58,44 @@ const MarkdownTableGenerator: React.FC = () => {
         <Card className="mb-4">
           <CardContent className="p-4">
             <section className="mb-8">
+              <Textarea
+                placeholder="Paste your CSV, TSV, JSON, or ASCII table here"
+                value={rawText}
+                onChange={(e) => setRawText(e.target.value)}
+                rows={5}
+                className="mb-4"
+              />
+              <Button onClick={handleRawTextParse}>Parse</Button>
+            </section>
+            <section className="mb-8">
               <div className="flex gap-2 mt-4 mb-4">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon">
-                      <AlignLeft className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>左揃え</p>
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon">
-                      <AlignCenter className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>中央揃え</p>
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon">
-                      <AlignRight className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>右揃え</p>
-                  </TooltipContent>
-                </Tooltip>
+                {tableData.columns.map((col) => (
+                  <Tooltip key={col.id}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setColumnAlignment(col.id, "left")}
+                      >
+                        <AlignLeft className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Left Align</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
               </div>
             </section>
-
             <section className="mb-8">
               <div className="border rounded-lg overflow-hidden mb-4">
                 <table className="w-full">
                   <thead>
                     <tr>
                       <th className="w-10 bg-muted text-center text-sm p-2"></th>
-                      {data[0].map((_, index) => (
-                        <th key={index} className="p-2 bg-muted">
-                          {String.fromCharCode(65 + index)}
+                      {tableData.columns.map((col) => (
+                        <th key={col.id} className="p-2 bg-muted">
+                          {col.name}
                         </th>
                       ))}
                       <th className="w-20 bg-muted p-2">
@@ -99,7 +111,7 @@ const MarkdownTableGenerator: React.FC = () => {
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>列を追加</p>
+                              <p>Add Column</p>
                             </TooltipContent>
                           </Tooltip>
                           <Tooltip>
@@ -107,13 +119,15 @@ const MarkdownTableGenerator: React.FC = () => {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={removeColumn}
+                                onClick={() =>
+                                  removeColumn(tableData.columns[tableData.columns.length - 1].id)
+                                }
                               >
                                 <Minus className="h-4 w-4" />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>列を削除</p>
+                              <p>Remove Column</p>
                             </TooltipContent>
                           </Tooltip>
                         </div>
@@ -121,21 +135,21 @@ const MarkdownTableGenerator: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {data.map((row, i) => (
+                    {tableData.rows.map((row, i) => (
                       <tr
-                        key={i}
+                        key={row.id}
                         className={i % 2 === 0 ? "bg-gray-50" : "bg-white"}
                       >
                         <td className="w-10 bg-muted text-center text-sm p-2 border-r">
                           {i + 1}
                         </td>
-                        {row.map((cell, j) => (
-                          <td key={j} className="border p-0">
+                        {tableData.columns.map((col) => (
+                          <td key={col.id} className="border p-0">
                             <input
                               type="text"
-                              value={cell}
+                              value={row.data[col.id] || ""}
                               onChange={(e) =>
-                                handleCellChange(i, j, e.target.value)
+                                handleCellChange(row.id, col.id, e.target.value)
                               }
                               className="w-full p-2 focus:outline-none focus:ring-2 focus:ring-ring"
                             />
@@ -146,7 +160,7 @@ const MarkdownTableGenerator: React.FC = () => {
                     <tr>
                       <td
                         className="w-20 bg-muted p-2 border-r"
-                        colSpan={data[0].length + 2}
+                        colSpan={tableData.columns.length + 2}
                       >
                         <div className="flex justify-center gap-1">
                           <Tooltip>
@@ -160,7 +174,7 @@ const MarkdownTableGenerator: React.FC = () => {
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>行を追加</p>
+                              <p>Add Row</p>
                             </TooltipContent>
                           </Tooltip>
                           <Tooltip>
@@ -168,13 +182,15 @@ const MarkdownTableGenerator: React.FC = () => {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={removeRow}
+                                onClick={() =>
+                                  removeRow(tableData.rows[tableData.rows.length - 1].id)
+                                }
                               >
                                 <Minus className="h-4 w-4" />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>行を削除</p>
+                              <p>Remove Row</p>
                             </TooltipContent>
                           </Tooltip>
                         </div>
@@ -183,7 +199,6 @@ const MarkdownTableGenerator: React.FC = () => {
                   </tbody>
                 </table>
               </div>
-
               <div className="flex items-center gap-6 mb-4">
                 <div className="flex items-center gap-2">
                   <Checkbox
@@ -194,7 +209,7 @@ const MarkdownTableGenerator: React.FC = () => {
                     }
                   />
                   <label htmlFor="compact" className="text-sm">
-                    コンパクト形式
+                    Compact
                   </label>
                 </div>
                 <div className="flex items-center gap-2">
@@ -206,7 +221,7 @@ const MarkdownTableGenerator: React.FC = () => {
                     }
                   />
                   <label htmlFor="useHeader" className="text-sm">
-                    最初の行をヘッダーとして使用
+                    Use first row as header
                   </label>
                 </div>
               </div>
