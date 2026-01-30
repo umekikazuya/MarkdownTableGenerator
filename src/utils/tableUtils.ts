@@ -1,15 +1,19 @@
-export const addRow = (data: string[][]): string[][] => {
-  return [...data, Array(data[0].length).fill("")];
-};
+export type ColumnAlignment = "left" | "center" | "right";
 
-export const addColumn = (data: string[][]): string[][] => {
-  return data.map((row) => [...row, ""]);
-};
+export interface Column {
+  id: string;
+  name: string;
+  dataType: "string" | "number" | "boolean";
+  visible: boolean;
+  alignment: ColumnAlignment;
+}
 
-export const removeRow = (data: string[][]): string[][] => {
-  return data.length > 1 ? data.slice(0, -1) : data;
-};
+export interface Row {
+  id: string;
+  data: Record<string, any>;
+}
 
-export const removeColumn = (data: string[][]): string[][] => {
-  return data[0].length > 1 ? data.map((row) => row.slice(0, -1)) : data;
-};
+export interface TableData {
+  columns: Column[];
+  rows: Row[];
+}
