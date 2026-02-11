@@ -1,36 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# QMTG - Quick Markdown Table Generator
 
-## Getting Started
+Markdownテーブルを簡単に作成・編集できるWebアプリケーションです。
 
-First, run the development server:
+## 特徴
+
+- 直感的なUIでMarkdownテーブルを作成
+- ワンクリックでクリップボードにコピー
+- テキストからのテーブル自動生成
+- 列の配置設定（左寄せ・中央・右寄せ）
+- コンパクト表示モード
+- ヘッダーモード切り替え
+
+## デモ
+
+行と列を追加・削除して、リアルタイムでMarkdownテーブルを生成できます。
+
+## 使い方
+
+### 基本操作
+
+1. **行・列の追加**: `+` ボタンで行や列を追加
+2. **行・列の削除**: `-` ボタンで行や列を削除
+3. **セルの編集**: 各セルをクリックして直接編集
+4. **配置設定**: 列ヘッダーのアイコンで配置を変更
+5. **コピー**: `Copy` ボタンでMarkdownをクリップボードにコピー
+
+### テキストからインポート
+
+1. テキストエリアにタブ区切りまたはカンマ区切りのテキストを入力
+2. `Parse` ボタンをクリックでテーブルに変換
+
+### オプション
+
+- **Compact**: チェックでスペースを削除したコンパクトなMarkdownを生成
+- **Header**: チェックで最初の行をヘッダーとして扱う
+
+## セットアップ
+
+### 必要要件
+
+- Node.js 20.18.1 以上
+- npm 10.8.2 以上
+
+### インストール
+
+```bash
+npm install
+```
+
+### 開発サーバー起動
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+ブラウザで [http://localhost:3000](http://localhost:3000) を開いてください。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### ビルド
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+```
 
-## Learn More
+### 本番環境起動
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm start
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## テスト
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+# テスト実行
+npm test
 
-## Deploy on Vercel
+# UIモードでテスト
+npm run test:ui
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 技術スタック
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **フレームワーク**: Next.js 16.1.3
+- **UI**: React 19
+- **スタイリング**: Tailwind CSS
+- **コンポーネント**: Radix UI
+- **テスト**: Vitest, Playwright
+- **言語**: TypeScript
+
+## ライセンス
+
+MIT
